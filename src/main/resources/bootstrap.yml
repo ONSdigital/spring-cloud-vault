@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    consul:
+      config:
+        enabled: true
+        format: FILES
+        prefix: sample_configuration/master
+        defaultContext: allapps
+        profileSeparator: '-'

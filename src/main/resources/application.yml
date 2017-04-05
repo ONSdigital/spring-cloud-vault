@@ -1,0 +1,35 @@
+info:
+  contactEmail: philippe.brossier@ons.gov.uk
+  version: ${project.version}
+  commit: ${buildNumber}
+  branch: ${scmBranch}
+  buildTime: ${timestamp}
+
+server:
+  port: 8181
+
+management:
+  port: 8281
+  context-path: /mgmt
+
+spring:
+  application:
+    name: samplesvc
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        healthCheckPath: /mgmt/health
+        healthCheckInterval: 30s
+      host: localhost
+      port: 8500
+
+logging:
+  level:
+    com.sample: debug
+    org.springframework: warn
+    org.springframework.cloud.consul: debug
+
+endpoints:
+  enabled: true
+  sensitive: false

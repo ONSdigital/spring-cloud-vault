@@ -1,0 +1,86 @@
+########################################################################################################
+# Vault installation work - https://github.com/hashicorp/vault
+########################################################################################################
+- Downloaded the 64-bit Linux release (vault_0.6.5_linux_amd64.zip) from https://www.vaultproject.io/downloads.html
+- cd /home/centos/Downloads
+- unzip vault_0.6.5_linux_amd64.zip
+- sudo mv vault /usr/local/bin
+- To start a dev server (followed https://www.vaultproject.io/intro/getting-started/dev-server.html):
+        - vault server -dev
+                - not recommended in PROD. It stores data in-memory and every restart will clear all your secrets.
+                - in PROD, storage would more likely be on disk or in Consul.
+
+        - take a copy of:
+                - Unseal Key: kEc9Cz7NG8TlDyK6FgHIX3Q4Fi1ATwQ6e4YiVb3irI0=
+                - Root Token: cec9a10a-8456-e296-6428-52dfa28d596b
+
+        - in a new terminal:
+                - export VAULT_ADDR='http://127.0.0.1:8200'
+                - vault status
+                        Sealed: false
+                        Key Shares: 1
+                        Key Threshold: 1
+                        Unseal Progress: 0
+                        Unseal Nonce: Version: 0.6.5
+                        Cluster Name: vault-cluster-1207366e
+                        Cluster ID: 2b7f6569-92da-3800-df7e-b57dcc1c3316
+                        High-Availability Enabled: false
+
+        - using the CLI (an HTTP API is also available):
+                - to store values:
+                        - vault write secret/config/master notify.apiKey=prodKey notify.templateId=prodTemplate
+                        Success! Data written to: secret/config/master
+
+                - to read values:
+                        - vault read secret/config/master
+                        Key              	Value
+                        ---              	-----
+                        refresh_interval 	768h0m0s
+                        notify.apiKey    	prodKey
+                        notify.templateId	prodTemplate
+
+                        - vault read -format=json secret/config/master
+                        {
+                        	"request_id": "195b6e9b-9201-8648-be59-c4bf7cfac577",
+                        	"lease_id": "",
+                        	"lease_duration": 2764800,      // the length of time for which the lease is valid, in seconds
+                        	"renewable": false,
+                        	"data": {
+                        		"notify.apiKey": "prodKey",
+                        		"notify.templateId": "prodTemplate"
+                        	},
+                        	"warnings": null
+                        }
+
+                - to delete values:
+                        - vault delete secret/config/master
+                        Success! Deleted 'secret/config/master' if it existed.
+
+                - to mount a backend:
+                        - vault mount generic
+                        Successfully mounted 'generic' at 'generic'!
+
+                - to display all mounts:
+                        - vault mounts
+
+                - to unmount a backend:
+                        - vault unmount generic/
+                        Successfully unmounted 'generic/' if it was mounted
+
+        - following https://spring.io/blog/2016/06/24/managing-secrets-with-vault:
+                - open a new terminal
+                - export VAULT_ADDR='http://127.0.0.1:8200'
+                - vault unseal kEc9Cz7NG8TlDyK6FgHIX3Q4Fi1ATwQ6e4YiVb3irI0=
+                - export VAULT_TOKEN=cec9a10a-8456-e296-6428-52dfa28d596b
+                - vault write secret/config/master notify.apiKey=prodKey notify.templateId=prodTemplate
+                
+
+- TODO Try to have Consul as a backend (see https://github.com/drud/vault-consul-on-kube & https://jjasghar.github.io/blog/2016/11/14/vault-with-a-consul-backend/):
+    - vault mount consul
+    - to gain help:
+        - vault path-help consul
+        - vault path-help consul/config/access
+
+
+- TODO Start at https://www.vaultproject.io/intro/getting-started/authentication.html
+

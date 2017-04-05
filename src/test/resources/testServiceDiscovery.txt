@@ -1,0 +1,8 @@
+################################################################
+# To test service discovery with the Consul server
+################################################################
+- start Consul
+- start the app
+- go to http://localhost:8500/ui/#/dc1/services and verify that samplesvc & samplesvc-management are at 2 passing:
+        - Service 'samplesvc' check: HTTP GET http://philippe-dev:8281/mgmt/health: 200  Output: {"description":"Spring Cloud Consul Discovery Client","status":"UP"}
+        - Service 'samplesvc-management' check: HTTP GET http://philippe-dev:8281/mgmt/health: 200  Output: {"description":"Spring Cloud Consul Discovery Client","status":"UP"}

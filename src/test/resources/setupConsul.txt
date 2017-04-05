@@ -1,0 +1,10 @@
+################################################################
+# Consul installation work
+################################################################
+- Downloaded the 64-bit Linux release (consul_0.7.5_linux_amd64.zip) from https://www.consul.io/downloads.html
+- cd /home/centos/Downloads
+- unzip consul_0.7.5_linux_amd64.zip
+- sudo mv consul /usr/local/bin
+- Started the Agent: consul agent -dev
+        - this is in DEV mode, not recommended in PROD. In DEV mode, key/value are lost on a Consul restart.
+- Verified it is up at http://localhost:8500

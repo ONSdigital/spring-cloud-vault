@@ -1,0 +1,7 @@
+- install git2consul:
+    - sudo su -
+    - curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
+    - yum -y install nodejs
+    - Verify the install with: node --version
+    - response = v6.10.0
+    - npm install -g git2consul
