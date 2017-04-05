@@ -1,3 +1,6 @@
+Very good article used to build this project: https://spring.io/blog/2016/06/24/managing-secrets-with-vault
+
+
 ################################################################
 # To build
 ################################################################
@@ -7,11 +10,15 @@ mvn clean install
 ################################################################
 # To run
 ################################################################
+- prerequisites:
+    - set up and start Consul: see setupConsult.txt under /test/resources
+    - set up and start Vault: see setupVault.txt and testApplicationProperties.txt
+
 - with default profile:
-    - java -jar target/spring-cloud-consul-0.1.0.jar
+    - java -jar target/spring-cloud-vault-0.1.0.jar
 
 - with prod profile:
-    - java -jar -Dspring.profiles.active=prod target/spring-cloud-consul-0.1.0.jar
+    - java -jar -Dspring.profiles.active=prod target/spring-cloud-vault-0.1.0.jar
 
 
 ################################################################
@@ -32,26 +39,9 @@ mvn clean install
 
 
 ################################################################
-# To test the service discovery
+# To test the application properties configuration
 ################################################################
 - see testApplicationProperties.txt
 
 
-################################################################
-# TODO Encryption of props
-################################################################
-- Currently, storing props in GitHUb:
-    - consul kv get -recurse
-            git2consul/config:{
-              "version": "1.0",
-              "repos" : [{
-                "name" : "config",
-                "url" : "https://github.com/pilif42/git2consul_data.git",
-                "branches" : ["master"],
-                "hooks": [{
-                  "type" : "polling",
-                  "interval" : "1"
-                }]
-              }]
-            }
-    - pb is that data is not encrypted in https://github.com/pilif42/git2consul_data.git
+# TODO Use Consul for the backend of Vault

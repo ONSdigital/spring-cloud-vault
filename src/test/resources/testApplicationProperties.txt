@@ -1,100 +1,24 @@
 ################################################################
-# To test application properties with the Consul server
+# To test application properties with Vault
 ################################################################
-- Currently configured to run with Option 3.
+- look at setupVault.txt to start Vault
+- open a new Vault terminal
+- export VAULT_ADDR='http://127.0.0.1:8200'
+- vault unseal kEc9Cz7NG8TlDyK6FgHIX3Q4Fi1ATwQ6e4YiVb3irI0=
+- export VAULT_TOKEN=cec9a10a-8456-e296-6428-52dfa28d596b (token also referenced in bootstrap.yml)
+- vault write secret/my-application notify.apiKey=defaultKey notify.templateId=defaultTemplate
+- vault write secret/my-application/prod notify.apiKey=prodKey notify.templateId=prodTemplate
 
-
-- Option 1: Add key/value in the Consul web UI
-        - start Consul
-        - go to http://localhost:8500 andd add the below (config = base folder defined in bootstrap.yml, samplesvc is my application's name, - used for profileSeparator as per bootstrap.yml):
-                - config/samplesvc/notify.apiKey = defaultKey
-                - config/samplesvc/notify.templateId = defaultTemplate
-                - config/samplesvc-prod/notify.apiKey = prodKey
-                - config/samplesvc-prod/notify.templateId = prodTemplate
-        - amend bootstrap.yml to:
-               spring:
-                 cloud:
-                   consul:
-                     config:
-                       enabled: true
-                       prefix: config
-                       defaultContext: allapps
-                       profileSeparator: '-'
-        - rebuild the app and run the test section below
-
-
-- Option 2: Store a blob of properties in YAML
-        - update bootstrap.yaml to:
-                spring:
-                  cloud:
-                    consul:
-                      config:
-                        enabled: true
-                        format: YAML
-                        prefix: config
-                        defaultContext: allapps
-                        profileSeparator: '-'
-        - restart Consul and using the Consul web UI, add:
-                - config/samplesvc/data containing: see file stored under resources/config/samplesvc
-                - config/samplesvc-prod/data containing: see file stored under resources/config/samplesvc-prod
-        - rebuild the app and run the test section below
-
-
-- Option 3: Store properties in .git
-        - note that sample_configuration is used both in bootstrap.yaml and git2consul.json
-                - this was called config before but I had to rename it as it would not load correctly from github to Consul via git2consul
-        - amend bootstrap.yaml to:
-                spring:
-                  cloud:
-                    consul:
-                      config:
-                        enabled: true
-                        format: FILES
-                        prefix: sample_configuration/master
-                        defaultContext: allapps
-                        profileSeparator: '-'
-        - create a git repo if not there yet:
-                - git clone git@github.com:pilif42/git2consul_data.git
-                - vi samplesvc.yml and put content of resources/config/samplesvc/data
-                - vi samplesvc-prod.yml and put content of resources/config/samplesvc-prod/data
-                - git add --all
-                - git commit -m 'props file to test git2consul'
-                - git push -u origin master
-        - start Consul and verify ui at http://localhost:8500/ui/#/dc1/services
-        - start git2consul (full details at https://github.com/Cimpress-MCP/git2consul):
-                - git2consul --config-file /home/centos/code_perso/springCloudConsul/src/test/resources/git2consul/git2consul.json
-                - verify you get no errors and something similar to the below:
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"Adding /home/centos/code_perso/springCloudConsul/src/test/resources/git2consul/git2consul.json to KV git2consul/config as: \n{\n  \"version\": \"1.0\",\n  \"repos\" : [{\n    \"name\" : \"sample_configuration\",\n    \"url\" : \"https://github.com/pilif42/git2consul_data.git\",\n    \"branches\" : [\"master\"],\n    \"hooks\": [{\n      \"type\" : \"polling\",\n      \"interval\" : \"1\"\n    }]\n  }]\n}\n","time":"2017-04-04T15:57:01.152Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"git2consul is running","time":"2017-04-04T15:57:01.351Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"Initting repo sample_configuration","time":"2017-04-04T15:57:01.354Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"Initting branch /tmp/sample_configuration /tmp/sample_configuration/master","time":"2017-04-04T15:57:01.354Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":40,"msg":"Purging branch cache /tmp/sample_configuration/master for branch master in repo sample_configuration","time":"2017-04-04T15:57:01.355Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"Initialized branch master from sample_configuration","time":"2017-04-04T15:57:13.062Z","v":0}
-                        {"name":"git2consul","hostname":"philippe-dev","pid":5959,"level":30,"msg":"Loaded repo sample_configuration","time":"2017-04-04T15:57:13.064Z","v":0}
-        - in the Consul web UI, verify under KEY/VALUE:
-                - 1 entry for git2consul
-                - 1 entry for sample_configuration/master: samplesvc.yml and samplesvc-prod.yml
-        - rebuild the app and run the test section below
-
-
-- Option 4: TODO Store properties in Vault
-            -
+- amend bootstrap.yml to reference:
+    - my-application
+    - the new Vault token
+- build the app with mvn clean install
 
 
 ################################################################
 # Test section
 ################################################################
-- Verify I can see properties with the Consul API:
-    - running with Option 1 or 2:
-        curl http://localhost:8500/v1/kv/config/?recurse -v -X GET
-        200 and long json
-
-     - running with Option 3:
-        curl http://localhost:8500/v1/kv/sample_configuration/?recurse -v -X GET
-        200 and long json
-
-
-- Verify the app can pull props from Consul:
+- Verify the app can pull props from Vault:
     - running with default profile:
         curl http://localhost:8181 -v -X GET
         200 Greetings from Spring Boot: Key is defaultKey and Template is defaultTemplate
@@ -104,16 +28,10 @@
         200 Greetings from Spring Boot: Key is prodKey and Template is prodTemplate
 
 
-- Verify I can update props on the fly:
-    - Option 1 and 2:
-        - in the Consul UI, update the value of the PROD key templateId to philippeTest
-        - prompt our app to pull new props with:
-            curl http://localhost:8281/mgmt/refresh -v -X POST -d ""
-            200 []
-        - curl http://localhost:8181 -v -X GET
-            200 Greetings from Spring Boot: Key is prodKey and Template is philippeTest
-    - Option 3:
-        - in github, update the value of the PROD key templateId to philippeTest
-        - verify in the Consul UI that the new value appears under sample_configuration/master/samplesvc-prod.yml
-        - curl http://localhost:8181 -v -X GET
+- TODO Verify I can update props on the fly:
+    - update props in Vault
+    - required? prompt our app to pull new props with:
+                curl http://localhost:8281/mgmt/refresh -v -X POST -d ""
+                200 []
+    - curl http://localhost:8181 -v -X GET
             200 Greetings from Spring Boot: Key is prodKey and Template is philippeTest

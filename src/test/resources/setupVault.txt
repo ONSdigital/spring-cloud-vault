@@ -67,13 +67,6 @@
                         - vault unmount generic/
                         Successfully unmounted 'generic/' if it was mounted
 
-        - following https://spring.io/blog/2016/06/24/managing-secrets-with-vault:
-                - open a new terminal
-                - export VAULT_ADDR='http://127.0.0.1:8200'
-                - vault unseal kEc9Cz7NG8TlDyK6FgHIX3Q4Fi1ATwQ6e4YiVb3irI0=
-                - export VAULT_TOKEN=cec9a10a-8456-e296-6428-52dfa28d596b
-                - vault write secret/config/master notify.apiKey=prodKey notify.templateId=prodTemplate
-                
 
 - TODO Try to have Consul as a backend (see https://github.com/drud/vault-consul-on-kube & https://jjasghar.github.io/blog/2016/11/14/vault-with-a-consul-backend/):
     - vault mount consul
