@@ -1,7 +1,13 @@
 spring:
-    application:
-        name: my-application
-    cloud:
-        vault:
-            token: 7d70ac24-3f38-c5fd-9c63-5d6a49cc5e2d # this is the Root Token. See setupVault.txt.
-            scheme: http  #TODO Not for PROD. spring.cloud.vault.scheme defaults to https.
+  application:
+    name: my-application
+  cloud:
+    vault:
+      config:
+        order: -10   # sets the order for the property source
+      connection-timeout: 5000
+      host: localhost
+      port: 8200
+      read-timeout: 15000
+      scheme: http  # TODO Not for PROD. spring.cloud.vault.scheme defaults to https.
+      token: 5dd4f1b8-999f-664d-5130-db863acfb89f # this is the Root Token. See setupVault.txt.

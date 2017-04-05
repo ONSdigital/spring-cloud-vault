@@ -28,10 +28,18 @@
         200 Greetings from Spring Boot: Key is prodKey and Template is prodTemplate
 
 
-- TODO Verify I can update props on the fly:
-    - update props in Vault
-    - required? prompt our app to pull new props with:
-                curl http://localhost:8281/mgmt/refresh -v -X POST -d ""
-                200 []
+- Verify I can update props on the fly:
+    - update props in Vault:
+        vault write secret/my-application notify.apiKey=defaultKey notify.templateId=myTemplate
+    - verify new props are in Vault with vault read secret/my-application:
+        Key              	Value
+        ---              	-----
+        refresh_interval 	768h0m0s
+        notify.apiKey    	defaultKey
+        notify.templateId	myTemplate
+
+    - TODO how to set refresh_interval?
+        - see https://www.vaultproject.io/docs/secrets/generic/index.html
+        - comes from the value of the default_lease_ttl set on the mount, or the system value
     - curl http://localhost:8181 -v -X GET
-            200 Greetings from Spring Boot: Key is prodKey and Template is philippeTest
+            200 Greetings from Spring Boot: Key is defaultKey and Template is myTemplate
